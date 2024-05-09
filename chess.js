@@ -39,8 +39,8 @@ const playerInput = (player) => {
 };
 
 const move = (currentLocation, newLocation, currentPlayer) => {
-  console.log("**********")
-  console.log("inside move function")
+  console.log("**********");
+  console.log("inside move function");
   // get row and column of current location
   let currentRow = Number(currentLocation.slice(1)) - 1;
   let currentColumn = Number(rowsCols[currentLocation.slice(0, 1)]) - 1;
@@ -50,19 +50,19 @@ const move = (currentLocation, newLocation, currentPlayer) => {
 
   // check if piece is a pawn
   if (currentPiece.slice(1) === "P") {
-    console.log('current piece is a pawn')
+    console.log("current piece is a pawn");
     playerMove = movePawn(currentLocation, newLocation, currentPlayer);
     // check if piece is a rook
   } else if (currentPiece.slice(1) === "R") {
-    console.log('current piece is a rook')
+    console.log("current piece is a rook");
     playerMove = moveRook(currentLocation, newLocation, currentPlayer);
     // check if piece is a bishop
   } else if (currentPiece.slice(1) === "B") {
-    console.log('current piece is a bishop')
+    console.log("current piece is a bishop");
     playerMove = moveBishop(currentLocation, newLocation, currentPlayer);
   }
 
-  console.log(playerMove)
+  console.log(playerMove);
 
   if (playerMove.includes("Invalid")) {
     console.log(`${currentPiece} didn't move.`);
@@ -82,7 +82,46 @@ const movePawn = (currentLocation, newLocation, currentPlayer) => {
   let newRow = Number(newLocation.slice(1)) - 1;
   let newColumn = Number(rowsCols[newLocation.slice(0, 1)]) - 1;
 
+  // * start with special condition - each pawn can move 2 spaces on their first move
+  // * remember rows and columns are 0 indexed
+  // TODO: pawns can't move backwards
+  // TODO: en passant capture
+  // TODO: pawns capture diagonally
   if (
+    currentPlayer === "W" &&
+    currentRow === 1 &&
+    newRow === 3 &&
+    currentColumn === newColumn
+  ) {
+    // * check path
+    for (let i = currentRow + 1; i <= newRow; i++) {
+      if (board[i][currentColumn] === "  ") {
+        continue;
+      } else {
+        return "Invalid move. Cannot move through other pieces.";
+      }
+    }
+    board[newRow][newColumn] = currentPiece;
+    board[currentRow][currentColumn] = "  ";
+    return "Pawn's first move. Can move 2 spaces forward.";
+  } else if (
+    currentPlayer === "B" &&
+    currentRow === 6 &&
+    newRow === 4 &&
+    currentColumn === newColumn
+  ) {
+    // * check path
+    for (let i = currentRow - 1; i >= newRow; i--) {
+      if (board[i][currentColumn] === "  ") {
+        continue;
+      } else {
+        return "Invalid move. Cannot move through other pieces.";
+      }
+    }
+    board[newRow][newColumn] = currentPiece;
+    board[currentRow][currentColumn] = "  ";
+    return "Pawn's first move. Can move 2 spaces forward.";
+  } else if (
     currentRow === newRow &&
     (newColumn === currentColumn + 1 || currentColumn - 1)
   ) {
@@ -154,8 +193,8 @@ const moveRook = (currentLocation, newLocation, currentPlayer) => {
 };
 
 const moveBishop = (currentLocation, newLocation, currentPlayer) => {
-  console.log('*************')
-  console.log('inside moveBishop func')
+  console.log("*************");
+  console.log("inside moveBishop func");
   // get row and column of current location
   let currentRow = Number(currentLocation.slice(1)) - 1;
   let currentColumn = Number(rowsCols[currentLocation.slice(0, 1)]) - 1;
@@ -168,6 +207,7 @@ const moveBishop = (currentLocation, newLocation, currentPlayer) => {
   if (newRow !== currentRow && newColumn !== currentColumn) {
     // * Move is legal. Check path to make sure there aren't other pieces in the way
     // * Iterate over path
+    // TODO: check that logic accounts for moving backwards and forwards diagonally
     for (let i = currentRow + 1; i < newRow; i++) {
       if (board[i][currentColumn + 1] === "  ") {
         continue;
@@ -179,7 +219,7 @@ const moveBishop = (currentLocation, newLocation, currentPlayer) => {
     if (board[newRow][newColumn].slice(0, 1) === currentPlayer) {
       return "Invalid move. Cannot move through other pieces.";
     } else {
-      let pieceTaken = board[newRow][newColumn]
+      let pieceTaken = board[newRow][newColumn];
       board[newRow][newColumn] = currentPiece;
       board[currentRow][currentColumn] = "  ";
       return `Bishop moved diagonally and took ${pieceTaken}`;
@@ -188,6 +228,12 @@ const moveBishop = (currentLocation, newLocation, currentPlayer) => {
     return "Invalid move";
   }
 };
+
+const moveKnight = (currentLocation, newLocation, currentPlayer) => {};
+
+const moveQueen = (currentLocation, newLocation, currentPlayer) => {};
+
+const moveKing = (currentLocation, newLocation, currentPlayer) => {};
 
 const playGame = () => {
   let currentPlayer = "W"; // Player with white pieces starts
