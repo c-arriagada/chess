@@ -93,7 +93,7 @@ const movePawn = (currentLocation, newLocation, currentPlayer) => {
   // * remember rows and columns are 0 indexed
   // * pawns can only move forward
   // TODO: en passant capture
-  // TODO: pawn can't move diagonally if space is empty. 
+  // TODO: pawn can't move diagonally if space is empty.
   if (
     currentPlayer === "W" &&
     currentRow === 1 &&
@@ -175,7 +175,7 @@ const moveRook = (currentLocation, newLocation, currentPlayer) => {
   // get row and column of new location
   let newRow = Number(newLocation.slice(1)) - 1;
   let newColumn = Number(rowsCols[newLocation.slice(0, 1)]) - 1;
-
+  // TODO: Refactor logic to check for collisions
   if (currentRow === newRow && 0 <= newColumn <= 7) {
     // * Move is legal but let's now check if rook can actually move to this spot - no other pieces in the way or at the new location
     // * Iterate over path to check if spaces are free
@@ -313,7 +313,140 @@ const moveKnight = (currentLocation, newLocation, currentPlayer) => {
   }
 };
 
-const moveQueen = (currentLocation, newLocation, currentPlayer) => {};
+// * Queen can move any number of square diagonally, horizontally or vertically
+const moveQueen = (currentLocation, newLocation, currentPlayer) => {
+  // get row and column of current location
+  let currentRow = Number(currentLocation.slice(1)) - 1;
+  let currentColumn = Number(rowsCols[currentLocation.slice(0, 1)]) - 1;
+  let currentPiece = board[currentRow][currentColumn];
+  // get row and column of new location
+  let newRow = Number(newLocation.slice(1)) - 1;
+  let newColumn = Number(rowsCols[newLocation.slice(0, 1)]) - 1;
+
+  // vertical movement
+  if (newColumn === currentColumn && 0 <= newRow <= 7) {
+    // check for collisions
+    if (newRow > currentRow) {
+      for (let i = currentRow + 1; i < newRow; i++) {
+        if (board[i][newColumn] === "  ") {
+          continue;
+        } else {
+          return "Invalid move. Cannot move through other pieces.";
+        }
+      }
+    } else {
+      for (let i = currentRow - 1; i < newRow; i--) {
+        if (board[i][newColumn] === "  ") {
+          continue;
+        } else {
+          return "Invalid move. Cannot move through other pieces.";
+        }
+      }
+    }
+    // check if there's a piece to capture
+    if (board[newRow][newColumn] === "  ") {
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return "Queen moved vertically";
+    } else {
+      let capturedPiece = board[newRow][newColumn];
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return `Queen moved vertically and captured ${capturedPiece}`;
+    }
+  }
+  // horizontal movement
+  else if (newRow === currentRow && 0 <= newColumn <= 7) {
+    // check for collisions
+    if (newColumn > currentColumn) {
+      for (let i = currentColumn + 1; i < newColumn; i++) {
+        if (board[newRow][i] === "  ") {
+          continue;
+        } else {
+          return "Invalid move. Cannot move through other pieces.";
+        }
+      }
+    } else {
+      for (let i = currentColumn - 1; i < currentColumn; i--) {
+        if (board[newRow][i] === "  ") {
+          continue;
+        } else {
+          return "Invalid move. Cannot move through other pieces.";
+        }
+      }
+    }
+    // check if there's a piece to capture
+    if (board[newRow][newColumn] === "  ") {
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return "Queen moved horizontally";
+    } else {
+      let capturedPiece = board[newRow][newColumn];
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return `Queen moved horizontally and captured ${capturedPiece}`;
+    }
+  }
+  // diagonal movement
+  // ? Is there a better way to check for diagonal movement
+  else if (newRow !== currentRow && newColumn !== currentColumn) {
+    // check for collisions
+    // * moving diagonally forward and to the right coming from the top 
+    if (newRow > currentRow && newColumn > currentColumn) {
+      for (let i = currentRow + 1; i < newRow; i++) {
+        if (board[i][currentColumn + 1] === "  ") {
+          continue;
+        } else {
+          return "Invalid move. Cannot move through other pieces.";
+        }
+      }
+    }
+    // * moving diagonally forward and to the left coming from the top 
+    else if (newRow > currentRow && newColumn < currentColumn) {
+      for (let i = currentRow + 1; i < newRow; i++) {
+        if (board[i][currentColumn - 1] === "  ") {
+          continue;
+        } else {
+          return "Invalid move. Cannot move through other pieces.";
+        }
+      }
+    }
+    // * moving diagonally forward and to the right coming from the bottom 
+    else if (newRow < currentRow && newColumn < currentColumn) {
+      for (let i = currentRow - 1; i < newRow; i--) {
+        if (board[i][currentColumn - 1] === "  ") {
+          continue;
+        } else {
+          return "Invalid move. Cannot move through other pieces.";
+        }
+      }
+    }
+    // * moving diagonally forward and to the left coming from the bottom 
+    else if (newRow < currentRow && newColumn < currentColumn) {
+      for (let i = currentRow - 1; i < newRow; i--) {
+        if (board[i][currentColumn + 1] === "  ") {
+          continue;
+        } else {
+          return "Invalid move. Cannot move through other pieces.";
+        }
+      }
+    }
+    
+    // check if there's a piece to capture
+    if (board[newRow][newColumn] === "  ") {
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return "Queen moved diagonally";
+    } else {
+      let capturedPiece = board[newRow][newColumn];
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return `Queen moved diagonally and captured ${capturedPiece}`;
+    }
+  } else {
+    return "Invalid movement";
+  }
+};
 
 const moveKing = (currentLocation, newLocation, currentPlayer) => {};
 
