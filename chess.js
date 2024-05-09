@@ -84,9 +84,8 @@ const movePawn = (currentLocation, newLocation, currentPlayer) => {
 
   // * start with special condition - each pawn can move 2 spaces on their first move
   // * remember rows and columns are 0 indexed
-  // TODO: pawns can't move backwards
+  // * pawns can only move forward
   // TODO: en passant capture
-  // TODO: pawns capture diagonally
   if (
     currentPlayer === "W" &&
     currentRow === 1 &&
@@ -122,19 +121,39 @@ const movePawn = (currentLocation, newLocation, currentPlayer) => {
     board[currentRow][currentColumn] = "  ";
     return "Pawn's first move. Can move 2 spaces forward.";
   } else if (
-    currentRow === newRow &&
+    currentPlayer === "W" &&
+    newColumn === currentColumn &&
+    newRow === currentRow + 1
+  ) {
+    board[newRow][newColumn] = currentPiece;
+    board[currentRow][currentColumn] = "  ";
+    return "Pawn was moved one space forward";
+  } else if (
+    currentPlayer === "B" &&
+    newColumn === currentColumn &&
+    newRow === currentRow - 1
+  ) {
+    board[newRow][newColumn] = currentPiece;
+    board[currentRow][currentColumn] = "  ";
+    return "Pawn was moved one space forward";
+    // * pawn movement when capturing for white pieces
+  } else if (
+    newRow === currentRow + 1 &&
     (newColumn === currentColumn + 1 || currentColumn - 1)
   ) {
+    let capturedPiece = board[newRow][newColumn];
     board[newRow][newColumn] = currentPiece;
     board[currentRow][currentColumn] = "  ";
-    return "Pawn was moved one space to the left or right.";
+    return `Pawn moved diagonally and captured ${capturedPiece}`;
+    // * pawn movement when capturing for black pieces
   } else if (
-    currentColumn === newColumn &&
-    (newRow === currentRow + 1 || currentRow - 1)
+    newRow === currentRow - 1 &&
+    (newColumn === currentColumn + 1 || currentColumn - 1)
   ) {
+    let capturedPiece = board[newRow][newColumn];
     board[newRow][newColumn] = currentPiece;
     board[currentRow][currentColumn] = "  ";
-    return "Pawn was moved one space forward or backward";
+    return `Pawn moved diagonally and captured ${capturedPiece}`;
   } else {
     return "Invalid move";
   }
@@ -235,12 +254,14 @@ const moveQueen = (currentLocation, newLocation, currentPlayer) => {};
 
 const moveKing = (currentLocation, newLocation, currentPlayer) => {};
 
+// TODO: If player's move is invalid prompt the player for a valid move
 const playGame = () => {
   let currentPlayer = "W"; // Player with white pieces starts
   let rounds = 1;
   let winner;
 
-  while (rounds < 2) {
+  while (rounds < 4) {
+    console.log("Round", rounds);
     let [currentLocationP1, newLocationP1] = playerInput("Player 1");
     move(currentLocationP1, newLocationP1, currentPlayer);
     currentPlayer = "B";
