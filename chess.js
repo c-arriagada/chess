@@ -14,14 +14,14 @@ const prompt = require("prompt-sync")({ sigint: true });
 // Pawn - Moves one square forward, but on its first move, it can move two squares forward. It captures diagonally one square forward.
 
 const board = [
-  ["WR", "WK", "WB", "WK", "WQ", "WB", "WK", "WR"],
+  ["WR", "WN", "WB", "WK", "WQ", "WB", "WN", "WR"],
   ["WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP"],
   ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
   ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
   ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
   ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
   ["BP", "BP", "BP", "BP", "BP", "BP", "BP", "BP"],
-  ["BR", "BK", "BB", "BK", "BQ", "BB", "BK", "BR"],
+  ["BR", "BN", "BB", "BK", "BQ", "BB", "BN", "BR"],
 ];
 
 let rowsCols = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 }; // values of columns - y value
@@ -29,10 +29,10 @@ let rowsCols = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 }; // values of 
 const playerInput = (player) => {
   // ask user for input. letters = columns, numbers = rows
   let playerInputPiece = prompt(
-    `${player} Tell me the location of the piece you'd like to move. e.g. 'a1': `
+    `${player} - Tell me the location of the piece you'd like to move. e.g. 'a1': `
   );
   let playerInputNewLocation = prompt(
-    "Where would you like to move this piece to? e.g. 'a4':"
+    "Where would you like to move this piece to? e.g. 'a4': "
   );
 
   return [playerInputPiece, playerInputNewLocation];
@@ -48,18 +48,25 @@ const move = (currentLocation, newLocation, currentPlayer) => {
 
   let playerMove;
 
-  // check if piece is a pawn
+  // check type of piece being moved
   if (currentPiece.slice(1) === "P") {
     console.log("current piece is a pawn");
     playerMove = movePawn(currentLocation, newLocation, currentPlayer);
-    // check if piece is a rook
   } else if (currentPiece.slice(1) === "R") {
     console.log("current piece is a rook");
     playerMove = moveRook(currentLocation, newLocation, currentPlayer);
-    // check if piece is a bishop
   } else if (currentPiece.slice(1) === "B") {
     console.log("current piece is a bishop");
     playerMove = moveBishop(currentLocation, newLocation, currentPlayer);
+  } else if (currentPiece.slice(1) === "N") {
+    console.log("current piece is a knight");
+    playerMove = moveKnight(currentLocation, newLocation, currentPlayer);
+  } else if (currentPiece.slice(1) === "K") {
+    console.log("current piece is a king");
+    playerMove = moveKing(currentLocation, newLocation, currentPlayer);
+  } else if (currentPiece.slice(1) === "Q") {
+    console.log("current piece is a queen");
+    playerMove = moveQueen(currentLocation, newLocation, currentPlayer);
   }
 
   console.log(playerMove);
@@ -86,6 +93,7 @@ const movePawn = (currentLocation, newLocation, currentPlayer) => {
   // * remember rows and columns are 0 indexed
   // * pawns can only move forward
   // TODO: en passant capture
+  // TODO: pawn can't move diagonally if space is empty. 
   if (
     currentPlayer === "W" &&
     currentRow === 1 &&
@@ -212,8 +220,6 @@ const moveRook = (currentLocation, newLocation, currentPlayer) => {
 };
 
 const moveBishop = (currentLocation, newLocation, currentPlayer) => {
-  console.log("*************");
-  console.log("inside moveBishop func");
   // get row and column of current location
   let currentRow = Number(currentLocation.slice(1)) - 1;
   let currentColumn = Number(rowsCols[currentLocation.slice(0, 1)]) - 1;
@@ -248,7 +254,64 @@ const moveBishop = (currentLocation, newLocation, currentPlayer) => {
   }
 };
 
-const moveKnight = (currentLocation, newLocation, currentPlayer) => {};
+// * Knight moves in an L - two squares in one direction and one perpendicular
+const moveKnight = (currentLocation, newLocation, currentPlayer) => {
+  // get row and column of current location
+  let currentRow = Number(currentLocation.slice(1)) - 1;
+  let currentColumn = Number(rowsCols[currentLocation.slice(0, 1)]) - 1;
+  let currentPiece = board[currentRow][currentColumn];
+  // get row and column of new location
+  let newRow = Number(newLocation.slice(1)) - 1;
+  let newColumn = Number(rowsCols[newLocation.slice(0, 1)]) - 1;
+
+  // * Forwards and backwards movement
+  if (
+    (newColumn === currentColumn + 1 && newRow === currentRow + 2) ||
+    (newColumn === currentColumn - 1 && newRow === currentRow + 2)
+  ) {
+    board[currentRow][currentColumn] = "  ";
+    board[newRow][newColumn] = currentPiece;
+    return "Knight moved forwards or backwards";
+  } else if (
+    (newColumn === currentColumn + 1 && newRow === currentRow - 2) ||
+    (newColumn === currentColumn - 1 && newRow === currentRow - 2)
+  ) {
+    board[currentRow][currentColumn] = "  ";
+    board[newRow][newColumn] = currentPiece;
+    return "Knight moved forwards or backwards";
+    // * Sideways movement
+  } else if (
+    (newRow === currentRow + 1 && newColumn === currentColumn + 2) ||
+    (newRow === currentRow + 1 && newColumn === currentColumn - 2)
+  ) {
+    if (board[newRow][newColumn] === "  ") {
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return "Knight moved sideways";
+    } else {
+      let capturedPiece = board[newRow][newColumn];
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return `Knight moved sideways and captured ${capturedPiece}`;
+    }
+  } else if (
+    (newRow === currentRow - 1 && newColumn === currentColumn + 2) ||
+    (newRow === currentRow - 1 && newColumn === currentColumn - 2)
+  ) {
+    if (board[newRow][newColumn] === "  ") {
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return "Knight moved sideways";
+    } else {
+      let capturedPiece = board[newRow][newColumn];
+      board[currentRow][currentColumn] = "  ";
+      board[newRow][newColumn] = currentPiece;
+      return `Knight moved sideways and captured ${capturedPiece}`;
+    }
+  } else {
+    return "Invalid move";
+  }
+};
 
 const moveQueen = (currentLocation, newLocation, currentPlayer) => {};
 
@@ -265,6 +328,7 @@ const playGame = () => {
     let [currentLocationP1, newLocationP1] = playerInput("Player 1");
     move(currentLocationP1, newLocationP1, currentPlayer);
     currentPlayer = "B";
+    console.log(board.map((row) => row.join(", ")));
     let [currentLocationP2, newLocationP2] = playerInput("Player 2");
     move(currentLocationP2, newLocationP2, currentPlayer);
     currentPlayer = "W";
