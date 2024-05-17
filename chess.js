@@ -50,7 +50,6 @@ const move = (currentLocation, newLocation, currentPlayer) => {
   let currentPiece = board[currentRow][currentColumn];
 
   let playerMove;
-
   // Each movement function is a function of 5 arguments,
   // currentRow, currentColumn, newRow, newColumn currentPlayer
   const moves = {
@@ -299,12 +298,22 @@ const moveKnight = (
     (newColumn === currentColumn + 1 && newRow === currentRow + 2) ||
     (newColumn === currentColumn - 1 && newRow === currentRow + 2)
   ) {
-    console.log("valid move");
+    if (board[newRow][newColumn] === "  ") {
+      console.log("valid move");
+    } else {
+      capturedPiece = board[newRow][newColumn];
+      console.log("valid move");
+    }
   } else if (
     (newColumn === currentColumn + 1 && newRow === currentRow - 2) ||
     (newColumn === currentColumn - 1 && newRow === currentRow - 2)
   ) {
-    console.log("valid move");
+    if (board[newRow][newColumn] === "  ") {
+      console.log("valid move");
+    } else {
+      capturedPiece = board[newRow][newColumn];
+      console.log("valid move");
+    }
     // Sideways movement
   } else if (
     (newRow === currentRow + 1 && newColumn === currentColumn + 2) ||
@@ -482,7 +491,7 @@ const moveKing = (
         capturedPiece = board[newRow][newColumn];
         console.log("valid move");
       }
-      // move diagonlly forward and left from the top
+      // move diagonally forward and left from the top
     } else if (newRow === currentRow + 1 && newColumn === currentColumn - 1) {
       if (board[newRow][newColumn] === "  ") {
         console.log("valid move");
@@ -521,53 +530,30 @@ const moveKing = (
   return true;
 };
 
-// const nextPlayer = (currentPlayer) => {
-//   return currentPlayer === "W" ? "B" : "W";
-// };
-
+const nextPlayer = (currentPlayer) => {
+  return currentPlayer === "W" ? "B" : "W";
+};
 
 const playGame = () => {
-  // * Player with white pieces starts
+  // Player with white pieces starts
   let currentPlayer = "W";
-  let rounds = 1;
+  let turns = 1;
   let winner;
 
-  // AL: An opportunity to consolidate the player turn switching and game loop:
-
-  // let playerIsValid = false;
-  // while (rounds < 4) {
-  //   let [currentLocation, newLocation] = playerInput(`Player ${currentPlayer}`);
-  //   playerIsValid = move(currentLocation, newLocation, currentPlayer);
-
-  //   // Player makes a valid move, so switch player
-  //   if (playerIsValid) {
-  //     console.log(board.map((row) => row.join(", ")));
-  //     currentPlayer = nextPlayer(currentPlayer)
-  //     rounds++
-  //   }
-  // }
-
-  while (rounds < 10) {
-    console.log("Round", rounds);
-
-    let player1IsValid = false;
-    while (player1IsValid !== true) {
-      let [currentLocationP1, newLocationP1] = playerInput("Player 1");
-      player1IsValid = move(currentLocationP1, newLocationP1, currentPlayer);
-    }
-    currentPlayer = "B";
-    console.log(board.map((row) => row.join(", ")));
-
-    let player2IsValid = false;
-    while (player2IsValid !== true) {
-      let [currentLocationP2, newLocationP2] = playerInput("Player 2");
-      player2IsValid = move(currentLocationP2, newLocationP2, currentPlayer);
-    }
-    currentPlayer = "W";
-    console.log(board.map((row) => row.join(", ")));
-
-    rounds += 1;
+  let playerIsValid = false;
+  while (turns < 10) {
+    console.log(`turn number ${turns}`)
+    while(playerIsValid !== true) {
+    let [currentLocation, newLocation] = playerInput(`Player ${currentPlayer}`);
+    playerIsValid = move(currentLocation, newLocation, currentPlayer);
   }
+    // Player makes a valid move, so switch player
+      console.log(board.map((row) => row.join(", ")));
+      currentPlayer = nextPlayer(currentPlayer)
+      playerIsValid = false
+      turns++
+  }
+
 };
 
 playGame();
